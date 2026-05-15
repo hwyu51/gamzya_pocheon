@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <title>행복한 감자밭🥔</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 사용자 선택 화면 -->
+  <div id="user-select" class="screen">
+    <div class="user-select-inner">
+      <h1>행복한 감자밭🥔</h1>
+      <p class="subtitle">포천 홀스킹덤 글램핑</p>
+      <p class="prompt">누구신가요?</p>
+      <div class="user-buttons">
+        <button class="user-pick" data-user="혜원">혜원</button>
+        <button class="user-pick" data-user="채원">채원</button>
+        <button class="user-pick" data-user="혜지">혜지</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 앱 -->
+  <div id="app" class="screen hidden">
+    <header>
+      <div class="title">행복한 감자밭🥔</div>
+      <div class="current-user">
+        <span id="current-user-name"></span>
+        <button id="change-user" title="다른 사람으로 변경">⇄</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- 일정 탭 -->
+      <section id="tab-schedule" class="tab-content active">
+        <h2>일정</h2>
+
+        <div class="day">
+          <h3>토요일 (5/16)</h3>
+          <ol class="route">
+            <li><b>11:00</b> 신중동역 — 쏘카 픽업</li>
+            <li>구로역 — 채원 픽업</li>
+            <li>대방현대1차아파트 (동작구 등용로 127) — 주차 + 혜지 픽업</li>
+            <li>대방역 하나로마트 — 장보기</li>
+            <li>포천 홀스킹덤 글램핑 — 도착</li>
+          </ol>
+        </div>
+
+        <div class="day">
+          <h3>일요일 (5/17)</h3>
+          <ol class="route">
+            <li>체크아웃</li>
+            <li>카페 or 휴게소</li>
+            <li>대방현대1차아파트 — 혜지 드랍</li>
+            <li>구로역 — 채원 드랍</li>
+            <li><b>16:00</b> 쏘카 반납</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 살거 탭 -->
+      <section id="tab-shopping" class="tab-content">
+        <h2>살거 🛒</h2>
+        <p class="hint">대방역 하나로마트에서 장 볼 항목들</p>
+
+        <div class="add-form">
+          <input id="shopping-input" type="text" placeholder="추가할 항목 (예: 종이컵)" maxlength="40">
+          <input id="shopping-note" type="text" placeholder="메모 (선택)" maxlength="60">
+          <button id="shopping-add">추가</button>
+        </div>
+
+        <div id="shopping-list" class="list"></div>
+      </section>
+
+      <!-- 준비물 탭 -->
+      <section id="tab-personal" class="tab-content">
+        <h2>준비물 🎒</h2>
+        <p class="hint"><b id="personal-owner"></b>의 짐 (본인만 보임)</p>
+
+        <div class="add-form">
+          <input id="personal-input" type="text" placeholder="추가할 준비물" maxlength="40">
+          <button id="personal-add">추가</button>
+        </div>
+
+        <div id="personal-list" class="list"></div>
+      </section>
+
+      <!-- 정산 탭 -->
+      <section id="tab-expense" class="tab-content">
+        <h2>정산 💰</h2>
+
+        <div id="expense-summary" class="summary"></div>
+
+        <details class="add-expense">
+          <summary>+ 지출 추가</summary>
+          <div class="expense-form">
+            <label>
+              결제한 사람
+              <select id="expense-payer">
+                <option value="혜원">혜원</option>
+                <option value="채원">채원</option>
+                <option value="혜지">혜지</option>
+              </select>
+            </label>
+            <label>
+              어디에 / 무엇을
+              <input id="expense-desc" type="text" placeholder="예: 하나로마트 장보기" maxlength="40">
+            </label>
+            <label>
+              금액 (원)
+              <input id="expense-amount" type="number" placeholder="0" min="0" step="100">
+            </label>
+            <label>
+              나눠낼 사람
+              <div class="split-picker">
+                <label><input type="checkbox" class="split-with" value="혜원" checked> 혜원</label>
+                <label><input type="checkbox" class="split-with" value="채원" checked> 채원</label>
+                <label><input type="checkbox" class="split-with" value="혜지" checked> 혜지</label>
+              </div>
+            </label>
+            <button id="expense-add">추가</button>
+          </div>
+        </details>
+
+        <h3>지출 내역</h3>
+        <div id="expense-list" class="list"></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="schedule">📅<span>일정</span></button>
+      <button class="nav-btn" data-tab="shopping">🛒<span>살거</span></button>
+      <button class="nav-btn" data-tab="personal">🎒<span>준비물</span></button>
+      <button class="nav-btn" data-tab="expense">💰<span>정산</span></button>
+    </nav>
+  </div>
+
+  <!-- 에러/로딩 -->
+  <div id="loading" class="overlay hidden">불러오는 중...</div>
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
