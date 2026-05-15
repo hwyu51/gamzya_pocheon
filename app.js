@@ -80,6 +80,8 @@ function showApp() {
   $('#current-user-name').textContent = currentUser;
   $('#personal-owner').textContent = currentUser;
   $('#expense-payer').value = currentUser;
+  const lastTab = localStorage.getItem('lastTab') || 'schedule';
+  activateTab(lastTab);
   startSubscriptions();
 }
 
@@ -99,12 +101,14 @@ $('#change-user').addEventListener('click', () => {
 });
 
 // ---------- 탭 ----------
+function activateTab(tab) {
+  $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  $$('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
+  localStorage.setItem('lastTab', tab);
+}
+
 $$('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    $$('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
-    $$('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
-  });
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
 });
 
 // ---------- 시드 ----------
