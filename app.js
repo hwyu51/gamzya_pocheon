@@ -29,8 +29,9 @@ const SHOPPING_SEED = [
   { name: '허브솔트', category: '🧂 양념' },
   { name: '마시멜로', category: '🍬 간식' },
   { name: '과자', category: '🍬 간식' },
-  { name: '맥주', category: '🍺 음료' },
+  { name: '술', category: '🍺 음료' },
   { name: '음료수', category: '🍺 음료' },
+  { name: '물', category: '🍺 음료' },
 ];
 
 const PERSONAL_SEED = [
@@ -41,7 +42,13 @@ const PERSONAL_SEED = [
   '속옷/양말',
   '충전기',
   '보조배터리',
+  '위장',
 ];
+
+// 사용자별 추가 준비물
+const PERSONAL_EXTRA = {
+  '혜지': ['카메라'],
+};
 
 // ---------- 상태 ----------
 let currentUser = localStorage.getItem('currentUser');
@@ -184,7 +191,8 @@ async function seedIfEmpty() {
     const personalSnap = await getDocs(collection(db, 'personal', user, 'items'));
     if (personalSnap.empty) {
       const batch = writeBatch(db);
-      PERSONAL_SEED.forEach((name, i) => {
+      const items = [...PERSONAL_SEED, ...(PERSONAL_EXTRA[user] || [])];
+      items.forEach((name, i) => {
         const ref = doc(collection(db, 'personal', user, 'items'));
         batch.set(ref, {
           name,
@@ -194,6 +202,55 @@ async function seedIfEmpty() {
         });
       });
       await batch.commit();
+    }
+  }
+}
+
+// ---------- 마이그레이션 (기존 데이터에 새 항목/변경 반영, 멱등) ----------
+async function applyChanges() {
+  // shopping: 맥주 → 술 이름 변경
+  const ss = await getDocs(collection(db, 'shopping'));
+  const sBatch = writeBatch(db);
+  let sUpdates = 0;
+  let hasWater = false;
+  ss.forEach(d => {
+    const data = d.data();
+    if (data.name === '맥주') {
+      sBatch.update(d.ref, { name: '술' });
+      sUpdates++;
+    }
+    if (data.name === '물') hasWater = true;
+  });
+  if (sUpdates > 0) await sBatch.commit();
+  if (!hasWater) {
+    await addDoc(collection(db, 'shopping'), {
+      name: '물',
+      category: '🍺 음료',
+      bought: false,
+      addedBy: 'seed',
+      order: 100,
+      createdAt: serverTimestamp(),
+    });
+  }
+
+  // personal: 위장 (모두) + 카메라 (혜지) — 이미 있으면 skip
+  for (const user of USERS) {
+    const ps = await getDocs(collection(db, 'personal', user, 'items'));
+    const names = new Set();
+    ps.forEach(d => names.add(d.data().name));
+
+    const toAdd = [];
+    if (!names.has('위장')) toAdd.push('위장');
+    for (const extra of (PERSONAL_EXTRA[user] || [])) {
+      if (!names.has(extra)) toAdd.push(extra);
+    }
+    for (const name of toAdd) {
+      await addDoc(collection(db, 'personal', user, 'items'), {
+        name,
+        checked: false,
+        order: 100,
+        createdAt: serverTimestamp(),
+      });
     }
   }
 }
@@ -614,6 +671,7 @@ async function startSubscriptions() {
   try {
     await dedupeSeeded();
     await seedIfEmpty();
+    await applyChanges();
   } catch (e) {
     showError('초기 데이터 설정 실패: ' + e.message);
   }
