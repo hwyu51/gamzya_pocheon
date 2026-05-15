@@ -111,6 +111,55 @@ $$('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => activateTab(btn.dataset.tab));
 });
 
+// ---------- 중복 정리 (race condition 복구) ----------
+async function dedupeSeeded() {
+  // shopping: addedBy === 'seed' 항목만 dedupe (사용자가 추가한 건 보존)
+  const ss = await getDocs(collection(db, 'shopping'));
+  const sGroups = new Map();
+  ss.forEach(d => {
+    const data = d.data();
+    if (data.addedBy !== 'seed') return;
+    const key = `${data.name}|${data.category || ''}`;
+    if (!sGroups.has(key)) sGroups.set(key, []);
+    sGroups.get(key).push({ ref: d.ref, data });
+  });
+  const sBatch = writeBatch(db);
+  let sCount = 0;
+  sGroups.forEach(list => {
+    if (list.length <= 1) return;
+    // 보존 우선순위: 체크됨 > note 정리된 것 > 첫 번째
+    list.sort((a, b) => {
+      if (!!a.data.bought !== !!b.data.bought) return a.data.bought ? -1 : 1;
+      if (!!a.data.note !== !!b.data.note) return a.data.note ? 1 : -1;
+      return 0;
+    });
+    list.slice(1).forEach(item => { sBatch.delete(item.ref); sCount++; });
+  });
+  if (sCount > 0) await sBatch.commit();
+
+  // personal: 각 user별 name 중복 제거
+  for (const user of USERS) {
+    const ps = await getDocs(collection(db, 'personal', user, 'items'));
+    const pGroups = new Map();
+    ps.forEach(d => {
+      const key = d.data().name;
+      if (!pGroups.has(key)) pGroups.set(key, []);
+      pGroups.get(key).push({ ref: d.ref, data: d.data() });
+    });
+    const pBatch = writeBatch(db);
+    let pCount = 0;
+    pGroups.forEach(list => {
+      if (list.length <= 1) return;
+      list.sort((a, b) => {
+        if (!!a.data.checked !== !!b.data.checked) return a.data.checked ? -1 : 1;
+        return 0;
+      });
+      list.slice(1).forEach(item => { pBatch.delete(item.ref); pCount++; });
+    });
+    if (pCount > 0) await pBatch.commit();
+  }
+}
+
 // ---------- 시드 ----------
 async function seedIfEmpty() {
   // 살거
@@ -563,6 +612,7 @@ $('#expense-add').addEventListener('click', async () => {
 async function startSubscriptions() {
   $('#loading').classList.remove('hidden');
   try {
+    await dedupeSeeded();
     await seedIfEmpty();
   } catch (e) {
     showError('초기 데이터 설정 실패: ' + e.message);
