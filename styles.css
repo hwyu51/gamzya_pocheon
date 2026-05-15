@@ -201,7 +201,11 @@ h3 { font-size: 16px; margin: 16px 0 8px; }
   cursor: pointer;
   font-weight: 600;
   color: #c47700;
+  list-style: none;
 }
+.add-expense summary::-webkit-details-marker { display: none; }
+.add-expense summary::before { content: '+ '; display: inline-block; width: 1em; }
+.add-expense[open] summary::before { content: '− '; }
 .expense-form {
   padding: 0 14px 14px;
   display: flex; flex-direction: column; gap: 10px;
