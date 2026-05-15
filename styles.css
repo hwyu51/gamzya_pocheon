@@ -162,9 +162,33 @@ h3 { font-size: 16px; margin: 16px 0 8px; }
 .balance-row { padding: 4px 0; font-size: 14px; }
 .balance-row.owes { color: #c97676; }
 .balance-row.gets { color: #4a9b6e; }
-.settle-instructions { margin-top: 10px; font-size: 14px; }
-.settle-row { padding: 4px 0; }
+.settle-section { margin-top: 10px; }
+.settle-instructions { font-size: 14px; }
+.settle-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+.settle-tab {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #e0c89a;
+  background: #fffdf8;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #7a6353;
+}
+.settle-tab.active {
+  background: #ff9f43;
+  color: #fff;
+  border-color: #ff9f43;
+  font-weight: 600;
+}
+.settle-row { padding: 4px 0; font-size: 14px; }
 .settle-row .arrow { color: #999; margin: 0 6px; }
+.settle-row.me-send { color: #c97676; font-weight: 500; }
+.settle-row.me-recv { color: #4a9b6e; font-weight: 500; }
+.settle-empty { padding: 6px 0; font-size: 13px; color: #b09a82; }
 
 .add-expense {
   background: #fff;

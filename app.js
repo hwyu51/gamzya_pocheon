@@ -391,16 +391,7 @@ function renderExpense(items) {
   // 누가 누구에게 송금?
   const instructions = settleDebts(balance);
   if (instructions.length) {
-    const title = document.createElement('div');
-    title.className = 'settle-instructions';
-    title.innerHTML = '<b>정산 방법</b>';
-    balanceDiv.appendChild(title);
-    instructions.forEach(ins => {
-      const row = document.createElement('div');
-      row.className = 'settle-row';
-      row.innerHTML = `<b>${ins.from}</b> <span class="arrow">→</span> <b>${ins.to}</b> ${fmtMoney(ins.amount)}`;
-      balanceDiv.appendChild(row);
-    });
+    balanceDiv.appendChild(renderSettleTabs(instructions));
   }
   summary.appendChild(balanceDiv);
 
@@ -437,6 +428,67 @@ function renderExpense(items) {
     el.querySelector('.expense-item-top').appendChild(del);
     list.appendChild(el);
   });
+}
+
+function renderSettleTabs(instructions) {
+  const mine = instructions.filter(ins => ins.from === currentUser || ins.to === currentUser);
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'settle-section';
+
+  const title = document.createElement('div');
+  title.className = 'settle-instructions';
+  title.innerHTML = '<b>정산 방법</b>';
+  wrapper.appendChild(title);
+
+  const tabs = document.createElement('div');
+  tabs.className = 'settle-tabs';
+  const tabMine = document.createElement('button');
+  tabMine.className = 'settle-tab active';
+  tabMine.textContent = `내 정산 (${mine.length})`;
+  const tabAll = document.createElement('button');
+  tabAll.className = 'settle-tab';
+  tabAll.textContent = `전체 (${instructions.length})`;
+  tabs.appendChild(tabMine);
+  tabs.appendChild(tabAll);
+  wrapper.appendChild(tabs);
+
+  const list = document.createElement('div');
+  list.className = 'settle-list';
+  wrapper.appendChild(list);
+
+  function paint(rows, isMineView) {
+    list.innerHTML = '';
+    if (!rows.length) {
+      const empty = document.createElement('div');
+      empty.className = 'settle-empty';
+      empty.textContent = isMineView ? '내가 받거나 줄 돈이 없어요 🎉' : '정산할 내역이 없어요';
+      list.appendChild(empty);
+      return;
+    }
+    rows.forEach(ins => {
+      const row = document.createElement('div');
+      row.className = 'settle-row';
+      if (ins.from === currentUser) row.classList.add('me-send');
+      else if (ins.to === currentUser) row.classList.add('me-recv');
+      row.innerHTML = `<b>${ins.from}</b> <span class="arrow">→</span> <b>${ins.to}</b> ${fmtMoney(ins.amount)}`;
+      list.appendChild(row);
+    });
+  }
+
+  paint(mine, true);
+  tabMine.addEventListener('click', () => {
+    tabMine.classList.add('active');
+    tabAll.classList.remove('active');
+    paint(mine, true);
+  });
+  tabAll.addEventListener('click', () => {
+    tabAll.classList.add('active');
+    tabMine.classList.remove('active');
+    paint(instructions, false);
+  });
+
+  return wrapper;
 }
 
 function settleDebts(balance) {
