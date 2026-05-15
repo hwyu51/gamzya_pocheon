@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import {
   getFirestore, collection, doc, onSnapshot,
-  setDoc, addDoc, updateDoc, deleteDoc, getDocs,
+  addDoc, updateDoc, deleteDoc, getDocs,
   serverTimestamp, query, orderBy, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
@@ -14,7 +14,7 @@ const USERS = ['혜원', '채원', '혜지'];
 
 // ---------- 시드 데이터 ----------
 const SHOPPING_SEED = [
-  { name: '삼겹살 + 항정살 500~600g', category: '🥩 고기', note: '혜지<1인분, 혜원≒1인분, 채원>1인분' },
+  { name: '삼겹살 + 항정살', category: '🥩 고기' },
   { name: '소세지', category: '🥩 고기' },
   { name: '국물 밀키트', category: '🍲 식사' },
   { name: '불닭볶음면', category: '🍲 식사' },
@@ -358,7 +358,7 @@ function renderExpense(items) {
   USERS.forEach(u => {
     const row = document.createElement('div');
     row.className = 'summary-row';
-    row.innerHTML = `<span>${u}이 결제</span><b>${fmtMoney(paid[u])}</b>`;
+    row.innerHTML = `<span>${u} 결제</span><b>${fmtMoney(paid[u])}</b>`;
     summary.appendChild(row);
   });
   const totalRow = document.createElement('div');
